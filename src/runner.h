@@ -12,13 +12,12 @@
 
 namespace gazekvm {
 
-// Creates and starts the configured source. For UDP, also makes sure
-// opentrack is running (after the port is bound). Progress and problems are
+// Creates and starts the configured source. Progress and problems are
 // appended to `log`, one line each. Returns null on failure.
 std::unique_ptr<Source> startSource(const Config& cfg, std::string& log);
 
 // Only one gazekvm may run at a time (console or tray): they'd fight over the
-// UDP port and both send hotkeys. Returns false if another is running.
+// tracker and both send hotkeys. Returns false if another is running.
 // The lock is held until the process exits.
 bool acquireSingleInstance();
 

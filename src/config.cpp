@@ -65,15 +65,6 @@ bool readRaw(const std::wstring& path, const char* section, const char* key, std
   return true;
 }
 
-void readBool(const std::wstring& path, const char* sec, const char* key, bool& v, std::string& warn) {
-  std::string s;
-  if (!readRaw(path, sec, key, s)) return;
-  s = lower(s);
-  if (s == "true" || s == "yes" || s == "on" || s == "1") v = true;
-  else if (s == "false" || s == "no" || s == "off" || s == "0") v = false;
-  else warn += std::string("[") + sec + "] " + key + ": expected true or false, got '" + s + "'\n";
-}
-
 void readFloat(const std::wstring& path, const char* sec, const char* key, float& v, std::string& warn) {
   std::string s;
   if (!readRaw(path, sec, key, s)) return;
@@ -99,7 +90,6 @@ bool parseSourceType(const std::string& text, SourceType& out) {
   if (t == "auto") out = SourceType::Auto;
   else if (t == "tgi" || t == "tobii") out = SourceType::Tgi;
   else if (t == "core" || t == "interaction") out = SourceType::Core;
-  else if (t == "udp" || t == "opentrack") out = SourceType::Udp;
   else return false;
   return true;
 }
@@ -225,13 +215,7 @@ Config loadConfig(const std::wstring& path, std::string& warn) {
   }
 
   if (readRaw(path, "source", "type", s) && !parseSourceType(s, c.source))
-    warn += "[source] type: expected auto, tgi, core or udp, got '" + s + "'\n";
-  if (readRaw(path, "source", "udp_bind", s)) c.udp_bind = s;
-  readInt(path, "source", "udp_port", c.udp_port, warn);
-  readInt(path, "source", "udp_stale_ms", c.udp_stale_ms, warn);
-  readInt(path, "source", "udp_frozen_ms", c.udp_frozen_ms, warn);
-  readBool(path, "source", "opentrack_autostart", c.opentrack_autostart, warn);
-  readRawW(path, "source", "opentrack_path", c.opentrack_path);
+    warn += "[source] type: expected auto, tgi or core, got '" + s + "'\n";
   readInt(path, "source", "core_port", c.core_port, warn);
   readInt(path, "source", "core_stale_ms", c.core_stale_ms, warn);
   readRawW(path, "source", "core_helper", c.core_helper);

@@ -116,14 +116,13 @@ Only one gazekvm runs at a time; quit the tray app before running `gazekvm.exe` 
 
 ## Tracking sources
 
-`[source] type` (or `--source tgi|core|udp` on the command line):
+`[source] type` (or `--source tgi|core` on the command line):
 
 | Source | Signals | Needs |
 |---|---|---|
 | `core` | gaze, head pose, presence | Tobii Experience; the bundled `gazekvm-tobii.exe` helper |
 | `tgi` | gaze, head pose, presence | Tobii Game Integration SDK in `third_party/` (request from developer.tobii.com) |
-| `udp` | head pose only | Anything sending opentrack "UDP over network" packets to `127.0.0.1:4242`, e.g. Tobii Game Hub |
-| `auto` (default) | `tgi` if this build has the SDK, else `core` if the helper is installed, else `udp` | |
+| `auto` (default) | `tgi` if this build has the SDK, else `core` | |
 
 Calibrate again after changing source: each reports head angles on its own scale.
 
@@ -133,22 +132,12 @@ gaze (screen pixels), head rotation (degrees) and Tobii's presence state to gaze
 about 60 times a second. gazekvm restarts the helper if it exits, and the helper exits when gazekvm does.
 Gaze is only reported while you look at the main screen, which is itself a useful signal. Tobii's presence
 can drop while your head is turned far toward the side screen, so fresh head pose also counts as present.
-The package is old (0.7.3) and a future Tobii Experience update could break it; `udp` is the fallback.
+The package is old (0.7.3) and a future Tobii Experience update could break it; `tgi` is the alternative.
 Its license (Tobii Core SDK and Gaming SDK License Agreement, in the package) is meant for interactive use;
 gazekvm uses gaze live and stores nothing.
 
 The Tobii **Pro** SDK (`Tobii.Research`, `tobii_research`) does not work: it finds an Eye Tracker 5 but the
 tracker refuses data without a Pro license (`TOBII_PRO_STATUS_SE_INSUFFICIENT_LICENSE`).
-
-**udp via Tobii Game Hub:** Game Hub has no output toggle. It treats opentrack as a supported "game" and
-streams head pose to port 4242 only while a process named `opentrack.exe` is running. So opentrack must be
-installed and open, but **not tracking**: pressing Start in opentrack makes it take port 4242 from gazekvm.
-With `opentrack_autostart = true` (default), gazekvm starts opentrack minimized if it isn't running,
-after it has bound the port itself. The install is found from the registry, or set `opentrack_path`.
-opentrack is left running when gazekvm exits. Game Hub exaggerates head turns (it's tuned for games);
-calibration absorbs that, but set its sensitivity curves to linear if it allows, so yaw stays proportional.
-Presence is inferred: no packets for `udp_stale_ms`, unchanged values for `udp_frozen_ms`, or an all-zero pose
-all count as "not present".
 
 `--debug` shows live values and per-source detail (packet rate, packet age, raw pose and flags).
 
@@ -156,7 +145,7 @@ all count as "not present".
 
 - Two PCs only, with the side PC to the left of the main one.
 - Switching to the side screen relies on head turn (gaze stops at the main screen's edge), so you have to
-  turn your head, not just your eyes. With the `udp` source there's no gaze at all.
+  turn your head, not just your eyes.
 - If you move the mouse across to the other screen by hand, gazekvm doesn't notice. Looking back at the
   screen you came from won't switch until gazekvm has first seen you look at the screen you moved to.
 
@@ -169,8 +158,6 @@ all count as "not present".
 | `src/tobii_source.*` | All Tobii SDK calls; stub when the SDK is absent |
 | `src/core_source.*`, `src/core_packet.h` | core source: starts the helper, receives its packets; parsing is pure and unit-tested |
 | `tools/gazekvm-tobii/` | The .NET helper that reads `Tobii.Interaction` |
-| `src/udp_source.*`, `src/opentrack_pose.h` | opentrack UDP head pose; packet parsing and presence inference are pure and unit-tested |
-| `src/opentrack_launcher.*` | Finds and starts opentrack so Game Hub streams |
 | `src/input_hooks.*` | LL keyboard/mouse hooks: typing/drag suppression, pause toggle |
 | `src/switcher.*` | `SendInput` hotkeys and edge-push fallback, tagged so our hooks ignore them |
 | `src/config.*` | INI loading, hotkey parsing, calibration save |

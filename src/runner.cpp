@@ -3,46 +3,26 @@
 #include <windows.h>
 
 #include "core_source.h"
-#include "opentrack_launcher.h"
 #include "switcher.h"
 #include "tobii_source.h"
-#include "udp_source.h"
 
 namespace gazekvm {
 
 std::unique_ptr<Source> startSource(const Config& cfg, std::string& log) {
   SourceType type = cfg.source;
-  if (type == SourceType::Auto) {
-    const std::wstring helper =
-        cfg.core_helper.empty() ? CoreSource::defaultHelperPath() : cfg.core_helper;
-    if (TobiiSource::available()) type = SourceType::Tgi;
-    else if (GetFileAttributesW(helper.c_str()) != INVALID_FILE_ATTRIBUTES) type = SourceType::Core;
-    else type = SourceType::Udp;
-  }
+  if (type == SourceType::Auto) type = TobiiSource::available() ? SourceType::Tgi : SourceType::Core;
   std::unique_ptr<Source> src;
   if (type == SourceType::Tgi) {
     src = std::make_unique<TobiiSource>();
-  } else if (type == SourceType::Core) {
-    src = std::make_unique<CoreSource>(cfg.core_helper, cfg.core_port, cfg.core_stale_ms);
   } else {
-    src = std::make_unique<UdpSource>(cfg.udp_bind, cfg.udp_port, cfg.udp_stale_ms,
-                                      cfg.udp_frozen_ms);
+    src = std::make_unique<CoreSource>(cfg.core_helper, cfg.core_port, cfg.core_stale_ms);
   }
   if (!src->start()) {
     log += std::string("Source ") + src->name() + ": " + src->error() + "\n";
     return nullptr;
   }
   log += std::string("Source: ") + src->name() +
-         (type == SourceType::Udp    ? " (head pose only, no gaze)"
-          : type == SourceType::Core ? " (Tobii.Interaction: gaze, head pose, presence)"
-                                     : "") +
-         "\n";
-  // After binding the port, so opentrack can't take it.
-  if (type == SourceType::Udp && cfg.opentrack_autostart) {
-    std::string msg;
-    ensureOpentrackRunning(cfg.opentrack_path, msg);
-    log += "opentrack: " + msg + "\n";
-  }
+         (type == SourceType::Core ? " (Tobii.Interaction: gaze, head pose, presence)" : "") + "\n";
   return src;
 }
 

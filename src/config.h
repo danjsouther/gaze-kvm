@@ -8,9 +8,8 @@ namespace gazekvm {
 
 enum class SwitchMethod { Hotkey, Edge };
 
-// auto = Tobii SDK if this build has it, else core (Tobii.Interaction helper)
-// if installed, else UDP.
-enum class SourceType { Auto, Tgi, Core, Udp };
+// auto = Tobii SDK if this build has it, else core (Tobii.Interaction helper).
+enum class SourceType { Auto, Tgi, Core };
 bool parseSourceType(const std::string& text, SourceType& out);
 
 struct Config {
@@ -22,14 +21,6 @@ struct Config {
   SwitchMethod method = SwitchMethod::Hotkey;
 
   SourceType source = SourceType::Auto;
-  std::string udp_bind = "127.0.0.1";
-  int udp_port = 4242;
-  int udp_stale_ms = 200;
-  int udp_frozen_ms = 500;
-  // Game Hub only streams while opentrack.exe runs; start it if needed (udp only).
-  bool opentrack_autostart = true;
-  std::wstring opentrack_path;  // empty = find the install
-
   // core: Tobii.Interaction via the gazekvm-tobii.exe helper.
   int core_port = 4243;
   int core_stale_ms = 200;

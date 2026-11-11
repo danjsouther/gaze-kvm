@@ -19,13 +19,11 @@ add_library(gazekvm_core STATIC
   src/switcher.cpp
   src/input_hooks.cpp
   src/tobii_source.cpp
-  src/udp_source.cpp
   src/core_source.cpp
-  src/opentrack_launcher.cpp
   src/runner.cpp
 )
 target_compile_definitions(gazekvm_core PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
-target_link_libraries(gazekvm_core PUBLIC gazekvm_engine user32 ws2_32 advapi32)
+target_link_libraries(gazekvm_core PUBLIC gazekvm_engine user32 ws2_32)
 
 # gazekvm.exe: console (run, --debug, --calibrate, tests)
 add_executable(gazekvm src/main.cpp)

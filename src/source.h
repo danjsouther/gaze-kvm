@@ -6,8 +6,8 @@
 
 namespace gazekvm {
 
-// Where samples come from: the Tobii Game Integration SDK, or head pose
-// arriving as opentrack UDP packets (e.g. from Tobii Game Hub).
+// Where samples come from: Tobii.Interaction through the gazekvm-tobii helper
+// (core), or the Tobii Game Integration SDK (tgi).
 class Source {
  public:
   virtual ~Source() = default;

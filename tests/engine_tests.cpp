@@ -10,7 +10,6 @@
 
 #include "core_packet.h"
 #include "engine.h"
-#include "opentrack_pose.h"
 
 using namespace gazekvm;
 
@@ -335,80 +334,6 @@ TEST(gaze_below_screen_is_not_on_screen) {
   s.gy = 1.4f;  // off the bottom (or top; sign unverified)
   CHECK(run(e, s, 1000, t).empty());
   CHECK(e.state() == Target::Side);
-}
-
-// --- opentrack UDP pose ------------------------------------------------------
-
-std::vector<char> packet(double x, double y, double z, double yaw, double pitch, double roll) {
-  const double v[6] = {x, y, z, yaw, pitch, roll};
-  std::vector<char> b(sizeof v);
-  std::memcpy(b.data(), v, sizeof v);
-  return b;
-}
-
-TEST(opentrack_packet_parses) {
-  auto b = packet(1, 2, 3, -25.5, 4, 5);
-  Pose p;
-  CHECK(parseOpentrackPacket(b.data(), b.size(), p));
-  CHECK(p.x == 1 && p.y == 2 && p.z == 3 && p.yaw == -25.5 && p.pitch == 4 && p.roll == 5);
-}
-
-TEST(opentrack_packet_rejects_wrong_size_and_nan) {
-  auto b = packet(0, 0, 0, 1, 0, 0);
-  Pose p;
-  CHECK(!parseOpentrackPacket(b.data(), b.size() - 1, p));
-  b.push_back(0);
-  CHECK(!parseOpentrackPacket(b.data(), b.size(), p));
-  auto n = packet(0, 0, 0, std::nan(""), 0, 0);
-  CHECK(!parseOpentrackPacket(n.data(), n.size(), p));
-}
-
-TEST(pose_freshness_present_while_moving) {
-  PoseFreshness f(200, 500);
-  CHECK(!f.sample(0).present);  // nothing yet
-  for (int64_t t = 0; t < 1000; t += kTick) f.feed(Pose{0, 0, 60, -10.0 - t * 0.001, 0, 0}, t);
-  const Sample s = f.sample(1000);
-  CHECK(s.present && s.headValid && !s.gazeValid);
-  CHECK(s.yaw < -10.9f && s.yaw > -11.0f);
-}
-
-TEST(pose_freshness_stale_when_packets_stop) {
-  PoseFreshness f(200, 500);
-  f.feed(Pose{0, 0, 60, -5, 0, 0}, 0);
-  CHECK(f.sample(150).present);
-  CHECK(!f.sample(250).present);
-}
-
-TEST(pose_freshness_absent_when_pose_frozen) {
-  PoseFreshness f(200, 500);
-  for (int64_t t = 0; t <= 1000; t += kTick) f.feed(Pose{1, 2, 60, -5, 3, 1}, t);
-  CHECK(!f.sample(1000).present);  // packets keep coming, values never change
-  f.feed(Pose{1, 2, 60, -5.01, 3, 1}, 1016);
-  CHECK(f.sample(1016).present);
-}
-
-TEST(pose_freshness_absent_when_zeroed) {
-  PoseFreshness f(200, 500);
-  f.feed(Pose{1, 2, 60, -5, 3, 1}, 0);
-  f.feed(Pose{}, 16);
-  CHECK(!f.sample(20).present);
-}
-
-TEST(udp_head_only_stream_drives_engine) {
-  // Head pose only (as from UDP): look at the side screen, then back.
-  PoseFreshness f(200, 500);
-  Engine e;
-  int64_t t = 0;
-  std::vector<Target> seen;
-  for (int i = 0; t < 600; ++i, t += kTick) {
-    f.feed(Pose{0, 0, 60, -30.0 + (i % 2) * 0.1, 0, 0}, t);
-    if (auto r = e.step(f.sample(t), t)) seen.push_back(*r);
-  }
-  for (int i = 0; t < 1200; ++i, t += kTick) {
-    f.feed(Pose{0, 0, 60, 0.0 + (i % 2) * 0.1, 0, 0}, t);
-    if (auto r = e.step(f.sample(t), t)) seen.push_back(*r);
-  }
-  CHECK(seen.size() == 2 && seen[0] == Target::Side && seen[1] == Target::Main);
 }
 
 // --- Tobii.Interaction helper packets ---------------------------------------

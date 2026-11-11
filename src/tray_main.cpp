@@ -211,7 +211,7 @@ void startCalibration() {
     MessageBoxW(g.hwnd, (L"Can't find " + exe).c_str(), L"gazekvm", MB_ICONERROR);
     return;
   }
-  // Calibration needs the tracking source (and the UDP port) to itself.
+  // Calibration needs the tracking source to itself.
   g.runner->stopSource();
   std::wstring cmd = L"\"" + exe + L"\" --calibrate --wait";
   STARTUPINFOW si{};

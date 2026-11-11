@@ -1,12 +1,12 @@
 // gazekvm: switch Deskflow between the main PC and a side PC based on where you look.
 //
-//   gazekvm                 run (needs a tracking source: Tobii SDK or UDP)
+//   gazekvm                 run
 //   gazekvm --test-switch   Phase 0: inject the Deskflow hotkeys, no Tobii
 //   gazekvm --test-edge     Phase 0 fallback A: push the cursor off the left edge
 //   gazekvm --test-hooks    show suppression / pause state from the LL hooks
 //   gazekvm --debug         live tracker values (present gx gy yaw)
 //   gazekvm --calibrate     measure head pose at the main screen (center + corners) and the side screen
-//   --source tgi|core|udp   override [source] type
+//   --source tgi|core       override [source] type
 #include <windows.h>
 
 #include <algorithm>
@@ -66,7 +66,7 @@ void printUsage() {
       "  gazekvm --debug        print live tracker values\n"
       "  gazekvm --calibrate    measure head pose: main center + corners, side center\n"
       "  gazekvm --config PATH  use another ini (default: gazekvm.ini next to the exe)\n"
-      "  gazekvm --source tgi|core|udp  where tracking comes from (default: [source] type)\n"
+      "  gazekvm --source tgi|core  where tracking comes from (default: [source] type)\n"
       "  gazekvm --wait         wait for Enter before exiting\n"
       "\n"
       "gazekvmw.exe runs the same thing in the system tray, without a console.\n");
@@ -316,7 +316,7 @@ int main(int argc, char** argv) {
   Config cfg = loadConfig(configPath, warnings);
   if (!warnings.empty()) std::fprintf(stderr, "%s", warnings.c_str());
   if (!sourceArg.empty() && !parseSourceType(sourceArg, cfg.source)) {
-    std::fprintf(stderr, "--source: expected tgi, core or udp, got '%s'\n", sourceArg.c_str());
+    std::fprintf(stderr, "--source: expected tgi or core, got '%s'\n", sourceArg.c_str());
     return 2;
   }
 
