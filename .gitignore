@@ -1,0 +1,12 @@
+build/
+out/
+tools/*/bin/
+tools/*/obj/
+.vs/
+CMakeUserPresets.json
+
+# Tobii Game Integration SDK is not redistributable
+third_party/tobii_gameintegration_*/
+
+# Gaze recordings stay local (Tobii consumer license)
+*.csv

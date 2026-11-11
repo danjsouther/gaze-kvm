@@ -1,0 +1,9 @@
+# Add to the Deskflow SERVER config (the main PC, where gazekvm runs)
+# (Server -> Configure -> Hotkeys, or paste into the text config).
+# Replace SIDE_SCREEN and MAIN_SCREEN with the screen names Deskflow shows
+# for each machine (by default, their computer names).
+
+section: options
+    keystroke(Control+Alt+Shift+F11) = switchToScreen(SIDE_SCREEN)
+    keystroke(Control+Alt+Shift+F12) = switchToScreen(MAIN_SCREEN)
+end
