@@ -85,12 +85,14 @@ later builds never overwrite it, so settings added later fall back to their defa
 
 Copies `gazekvm.exe`, `gazekvmw.exe`, the `gazekvm-tobii.exe` helper and the Tobii DLLs to
 `%LOCALAPPDATA%\Programs\gazekvm`, registers a scheduled task that starts the tray app 30 s after login
-with highest privileges, and starts it now. It asks for administrator rights to register the task.
+with highest privileges, adds a **gazekvm** Start menu shortcut (type "gaze" in Start), and starts it now.
+It asks for administrator rights to register the task. The shortcut starts the tray app through the same
+task, so it gets the same privileges without a UAC prompt, and does nothing if the app is already running.
 An existing `gazekvm.ini` in the install folder is kept; on first install it takes the one from
 `build\Release` (with any calibration done there). Rerun it after every rebuild to update.
 
 - `.\install.ps1 -NoAutostart`: no login task (no admin needed)
-- `.\install.ps1 -Uninstall`: remove the task and program files, keep `gazekvm.ini`
+- `.\install.ps1 -Uninstall`: remove the task, shortcut and program files, keep `gazekvm.ini`
 
 Highest privileges matter: without them Windows blocks the injected hotkeys while an administrator
 window (Task Manager, an elevated terminal) is focused. The 30 s delay lets Deskflow and the Tobii
